@@ -1,0 +1,84 @@
+@model IEnumerable<Post>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    ViewData["Title"] = "My Dashboard";
+    var comments = ViewBag.MyComments as List<Comment>;
+    var user = await UserManager.GetUserAsync(User);
+    var emailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">Welcome, @user.UserName!</h2>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Account Information</h5>
+            <p class="card-text"><strong>Email:</strong> @user.Email</p>
+            <p class="card-text"><strong>Email Confirmed:</strong> @(emailConfirmed ? "Yes" : "No")</p>
+            <p class="card-text"><strong>Phone:</strong> @(user.PhoneNumber ?? "Not set")</p>
+            
+        </div>
+    </div>
+
+    <a class="btn btn-outline-primary me-2" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">Change Password</a>
+    <a class="btn btn-outline-secondary" asp-area="Identity" asp-page="/Account/Manage/Index">Manage Profile</a>
+    <a class="btn btn-outline-secondary" asp-controller="Post" asp-action="Create">Create New Post <i class="bi bi-pencil"></i></a>
+
+<hr />
+
+<h2 class="mt-4">My Posts</h2>
+@if (!Model.Any())
+{
+    <p>You haven't created any posts yet.</p>
+}
+else
+{
+    <ul class="list-group mb-4">
+        @foreach (var post in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @post.Title
+                <a asp-action="Details" asp-controller="Post" asp-route-id="@post.Id" class="btn btn-outline-primary"><i class="bi bi-eyeglasses"></i> View</a>
+            </li>
+            <div class="d-flex">
+                <form asp-action="DeleteConfirm" asp-controller="Post" method="post" asp-route-id="@post.Id" class="ms-auto">
+                    <input type="hidden" name="id" value="@post.Id" />
+                    <input type="hidden" name="returnTo" value="dashboard" />
+                    <button type="submit" class="btn btn-outline-danger">Delete <i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+            
+        }
+    </ul>
+}
+
+<hr />
+
+<h2>My Comments</h2>
+@if (comments == null || !comments.Any())
+{
+    <p>You haven't made any comments yet.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var comment in comments)
+        {
+            <li class="list-group-item">
+                <strong>On Post:</strong> @comment.Post.Title by @(comment.Post.Author?.Split('@')[0])<br />
+                @comment.Content
+            </li>
+            <div class="d-flex"> 
+                <form asp-action="DeleteComment" asp-controller="Post" method="post" class="ms-auto">
+                    <input type="hidden" name="id" value="@comment.Id" />
+                    <input type="hidden" name="returnTo" value="dashboard" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete <i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        }
+    </ul>
+}
+</div>

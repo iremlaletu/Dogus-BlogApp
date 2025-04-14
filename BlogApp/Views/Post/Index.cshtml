@@ -1,0 +1,52 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@model IEnumerable<Post>
+@{
+    ViewData["Title"] = "Blog Posts";
+}
+
+<div class="text-center m-3">
+    @if (ViewBag.Categories != null)
+    {
+        @foreach (var category in ViewBag.Categories)
+        {
+            <a asp-controller="post" asp-action="Index" asp-route-categoryId="@category.Id"
+                class="btn btn-outline-secondary ms-2">
+                @category.Name
+            </a>
+        }
+    }
+</div>
+
+
+@if(SignInManager.IsSignedIn(User))
+{
+   <div class="text-end my-3">
+    <a class="btn btn-outline-secondary" asp-action="Create" asp-asp-controller="Post"> Create New Post <i class="bi bi-pencil"></i> </a>
+    </div>
+}
+
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+
+    @foreach (var post in Model)
+    {
+        <div class="col">
+            <div class="card h-100 border-0 shadow-lg rounded-1">
+                <img src="@post.ImageUrlPath" class="card-img-top" alt="@post.Title"
+                    style="height: 300px; object-fit: cover" />
+                <div class="card-body">
+                    <h5 class="card-title"> @post.Title</h5>
+                    <p class="text-muted mb-2"> <i class="bi bi-calendar3"></i> Published on @post.CreatedAt.ToString("MMM dd, yyyy", System.Globalization.CultureInfo.InvariantCulture) </p>
+                    <span class="badge bg-secondary">@post.Category?.Name </span>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a asp-action="Details" asp-controller="Post" asp-route-id="@post.Id" class="fs-5"> <i class="bi bi-eyeglasses"></i>  Read
+                    </a>
+                    <h5 class="text-end"> by @(post.Author?.Split('@')[0])</h5>
+                </div>
+            </div>
+        </div>
+    }
+</div>

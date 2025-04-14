@@ -1,0 +1,64 @@
+@model EditViewModel
+
+@{
+    ViewData["Title"] = "Edit Post";
+}
+
+
+<div class="container py-4" style="max-width: 1000px;">
+    <div class="row">
+        <div class="col-6">
+            <h2>@ViewData["Title"]</h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-action="Index" asp-controller="Post" class="btn btn-primary rounded">Back to List</a>
+        </div>
+    </div>
+    <hr>
+
+    <!-- enctype="multipart/form-data" is used for file uploads -->
+    <form asp-action="Edit" asp-controller="Post" method="post" enctype="multipart/form-data">
+
+        <div class="validation-summary">
+            <div asp-validation-summary="All" class="text-danger"> </div>
+        </div>
+
+        <!--The hidden field is used to pass the Post ID to the controller-->
+        <input asp-for="Post.Id" hidden  />
+
+        <div class="mb-3">
+            <label asp-for="Post.Title"></label>
+            <input asp-for="Post.Title" class="form-control" />
+            <span asp-validation-for="Post.Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Post.CategoryId"></label>
+            <select asp-for="Post.CategoryId" asp-items="Model.Categories" class="form-control">
+                <option value="">Select Category</option>
+            </select>
+            <span asp-validation-for="Post.CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Post.Author"></label>
+            <input asp-for="Post.Author" class="form-control" readonly />
+            <span asp-validation-for="Post.Author" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Post.Content"></label>
+            <textarea asp-for="Post.Content" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Post.Author" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ImageUrl">Image</label>
+            <input asp-for="ImageUrl" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-5">Update</button>
+        
+    </form>
+
+</div>

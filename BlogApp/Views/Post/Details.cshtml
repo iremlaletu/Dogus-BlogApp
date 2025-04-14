@@ -1,0 +1,111 @@
+@using System.Security.Claims
+
+@model Post
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+@{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+
+@if (User.Identity!.IsAuthenticated && Model.UserId == currentUserId)
+{
+    <div class="text-end">
+        <a asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning"> Edit Post <i class="bi bi-pencil"></i> </a>
+        <a asp-controller="Post" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger"> Delete Post <i class="bi bi-trash"></i>
+        </a>
+    </div>
+}
+
+@* 
+  NOTE: Author bilgisi şu anda User.Identity.Name üzerinden alınmakta ve  email adresi olarak gelmektedir.
+  sade görünüm açısından '@' sonrası kırptım.
+  Daha profesyonel bir çözümde, IdentityUser'dan türeyen özel bir AppUser sınıfı tanımlanarak UserName özelliği kullanılması gerektiğini biliyorum
+  Ancak bu proje kapsamında zaman kısıtı nedeniyle böyle bir çözüm buldum.
+*@
+
+
+<div class="container py-4" style="max-width: 1000px;">
+    <h1> @Model.Title</h1>
+
+    <div>
+        <span class="btn btn-outline-secondary"> by @(Model.Author?.Split('@')[0]) </span>
+        <span class="btn btn-outline-secondary"> Published on @Model.CreatedAt.ToString("MMMM dd, yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture) </span>
+        <span class="btn btn-outline-secondary"> Category @Model.Category.Name </span>
+    </div>
+
+    <img src="@Model.ImageUrlPath" alt="@Model.Title" class="img-fluid mt-3"
+        style="max-height: 400px; object-fit: cover;" />
+
+    <hr>
+
+    <div> @Model.Content </div>
+
+    <hr>
+
+    <div class="comments-section">
+        <h4>Comments</h4>
+        <div>
+            @if (Model.Comments?.Any() ?? false)
+            {
+                @foreach (var comment in Model.Comments)
+                {
+                    <div class="card border-primary mb-3">
+                        <div class="card-header">@comment.AuthorName?.Split('@')[0]</div>
+                        <div class="card-body">
+                            <p class="card-text">@comment.Content</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                        <span> @comment.CreatedAt.ToString("MMMM dd, yyyy",
+                                                System.Globalization.CultureInfo.InvariantCulture) </span>
+                        @if (User.Identity.IsAuthenticated && comment.UserId == currentUserId)
+                        {
+                            <form method="post" asp-action="DeleteComment" asp-controller="Post" asp-route-id="@comment.Id"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        }
+                        </div>
+                
+                    </div>
+                }
+            }
+            else
+            {
+                <div id="noCommentsMessage" class="alert alert-primary">
+                    <p> No comments yet. Be the first to comment!</p>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    <hr>
+
+    @if (User.Identity!.IsAuthenticated)
+    {
+
+
+        <h4>Add a Comment</h4>
+
+        <form method="post" asp-controller="Post" asp-action="AddComment">
+            <input type="hidden" name="PostId" value="@Model.Id" />
+            <div class="mb-3">
+                <label for="Content">Comment</label>
+                <textarea name="Content" class="form-control" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg mt-2"> Submit </button>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-warning mt-4">
+            You must <a asp-area="Identity" asp-page="/Account/Login">log in</a> to leave a comment.
+        </div>
+    }
+
+</div>
